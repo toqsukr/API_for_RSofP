@@ -1,4 +1,5 @@
 flask
 requests
 python-firebase
+firebase-admin
 flask-cors
