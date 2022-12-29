@@ -2,7 +2,8 @@
     "name": "API for RSofP",
     "version": 2,
     "builds": [{
-        "src": "*py"
+        "src": "*py",
+        "use": "@liudonghua123/now-flask",
     }],
     "routes": [
         { "src": "(.*)", "dest": "main.py" }
