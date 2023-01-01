@@ -10,7 +10,7 @@ import os
 from flask_cors import CORS
 from firebase_admin import firestore, credentials, initialize_app
 
-cred = credentials.Certificate("api/key.json")
+cred = credentials.Certificate("key.json")
 default_app = initialize_app(cred)
 
 def create_app():
