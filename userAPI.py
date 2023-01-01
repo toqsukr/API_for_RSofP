@@ -1,7 +1,9 @@
-import json
 import uuid
 from flask import Blueprint, request, jsonify, make_response
 from firebase_admin import firestore
+import os
+
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 class RepeateError(Exception):
     pass
