@@ -10,6 +10,7 @@ def create_app():
     CORS(app)
     app.config["SECRET_KEY"] = '12345rtfescdvf'
     app.config["CORS_HEADERS"] = "Content-Type"
+    app.url_map.strict_slashes = False
 
     from .userAPI import userAPI
 
