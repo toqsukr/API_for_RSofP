@@ -11,11 +11,6 @@ import uuid
 from flask import Blueprint, request, jsonify, make_response
 from firebase_admin import firestore
 
-db = firestore.client()
-state = False
-user_Ref = db.collection('user')
-user_rcmd = db.collection('rcmd')
-
 decision1 = [
     {
         "decision": -1,
