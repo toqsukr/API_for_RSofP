@@ -1,15 +1,13 @@
 import json
-
+import uuid
+from flask import Blueprint, request, jsonify, make_response
+from firebase_admin import firestore
 
 class RepeateError(Exception):
     pass
     
 class NotFound(Exception):
     pass
-
-import uuid
-from flask import Blueprint, request, jsonify, make_response
-from firebase_admin import firestore
 
 decision1 = [
     {
@@ -35,7 +33,6 @@ def decision():
     if request.method == 'OPTIONS':
         return _build_cors_preflight_response(), 204
     if request.method == 'GET':
-        #decision = [doc.to_dict() for doc in user_dcsn.stream()]
         state = False
         dec = decision1[0]
         decision1.pop(0)
