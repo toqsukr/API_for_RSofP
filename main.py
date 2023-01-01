@@ -19,8 +19,6 @@ def create_app():
     app.config["SECRET_KEY"] = '12345rtfescdvf'
     app.config["CORS_HEADERS"] = "Content-Type"
 
-    from .userAPI import userAPI
-
     app.register_blueprint(userAPI, url_prefix='/user')
 
     return app
