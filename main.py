@@ -23,11 +23,27 @@ def create_app():
 
     return app
 
+
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 db = firestore.client()
 state = False
 user_Ref = db.collection('user')
 user_rcmd = db.collection('rcmd')
+
+def getDataBase():
+    package_img = [doc.to_dict() for doc in user_rcmd.stream()]
+    return package_img
+
+rcmd = getDataBase()
+
+async def updateDataBase():
+    global rcmd
+    package_img = [doc.to_dict() for doc in user_rcmd.stream()]
+    for el in package_img:
+        user_rcmd.document(el["hex"]).delete()
+    for el in rcmd:
+        user_rcmd.document(el["hex"]).set(el)
+
 
 decision1 = [
     {
@@ -85,18 +101,16 @@ def recommendation():
             return f"An Error Occured: {e}"
     if request.method == 'POST':
         try:
-
-            package_img = [doc.to_dict() for doc in user_rcmd.stream()]
-
             flag = False
-            if(len(package_img) > 0):
-                if(request.json["src"] in list(map(lambda el: el["src"], package_img))):    flag = True
+            if(len(rcmd) > 0):
+                if(request.json["src"] in list(map(lambda el: el["src"], rcmd))):    flag = True
             if(flag):   raise RepeateError("This picture has already exist!")
             id = uuid.uuid4()
-            # user_rcmd.document(package_img[0]["hex"]).delete()
+            for i in range(len(rcmd)):
+                if(rcmd[i]["src"] == request.json["src"]):  rcmd.pop(i)
             request.json.update({"hex": id.hex})
-            package_img.append(request.json)
-            user_rcmd.document(id.hex).set(request.json)
+            rcmd.append(request.json)
+            updateDataBase()
             return _corsify_actual_response(jsonify({"success": True})), 200
         except RepeateError as e:
             return f"An Error Occured: {e}"
@@ -112,15 +126,10 @@ def collection():
     if request.method == 'POST':
         try:
             all_images = [doc.to_dict() for doc in user_Ref.stream()]
-            flag = False
-            if(len(all_images) > 0):
-                if(request.json["src"] in list(map(lambda el: el["src"], all_images))):   raise RepeateError("This picture has already exist!")
             id = uuid.uuid4()
             request.json.update({"hex": id.hex})
             user_Ref.document(id.hex).set(request.json)
             return _corsify_actual_response(jsonify({"success": True})), 200
-        except RepeateError as e:
-            return _corsify_actual_response(jsonify({"success": False})), 200
         except Exception as e:
             return f"An error occured{e}"
     if request.method == 'GET':
@@ -159,4 +168,3 @@ app = create_app()
 
 if __name__ == '__main__':
     app.run()
-
