@@ -67,6 +67,10 @@ def user():
     if request.method == 'POST':
         try:
             id = uuid.uuid4()
+            package_user = [doc.to_dict() for doc in db.collection('userID').stream()]
+            if(len(package_user) > 0):
+                for el in package_user:
+                    db.collection('userID').document(el["hex"]).delete()
             db.collection('userID').document(id.hex).set(request.json)
             return _corsify_actual_response(jsonify({"success": True})), 200
         except Exception as e:
