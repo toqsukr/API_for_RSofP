@@ -102,11 +102,8 @@ def recommendation():
                 if(request.json["src"] in list(map(lambda el: el["src"], rcmd))):    flag = True
             if(flag):   raise RepeateError("This picture has already exist!")
             id = uuid.uuid4()
-            for i in range(len(rcmd)):
-                if(rcmd[i]["src"] == request.json["src"]):  rcmd.pop(i)
             request.json.update({"hex": id.hex})
-            rcmd.append(request.json)
-            updateDataBase()
+            user_rcmd.document(id.hex).set(request.json)
             return _corsify_actual_response(jsonify({"success": True})), 200
         except RepeateError as e:
             return f"An Error Occured: {e}"
