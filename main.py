@@ -76,10 +76,6 @@ def decision():
         return _corsify_actual_response(jsonify(dec)), 200
     if request.method == 'POST':
         try:
-            package_img = [doc.to_dict() for doc in user_rcmd.stream()]
-            if(len(package_img) > 0):
-                for el in package_img:
-                    if(el["title"] == request.json["imgName"]):    user_rcmd.document(el["hex"]).delete()
             state = True
             decision1.append(request.json)
             return _corsify_actual_response(jsonify({"success": True})), 200
@@ -89,7 +85,7 @@ def decision():
             return f"An Error Occured: {e}"
 
 
-@userAPI.route('/rcmd', methods=['GET', 'POST', 'OPTIONS'])
+@userAPI.route('/rcmd', methods=['GET', 'POST', 'OPTIONS', 'DELETE'])
 def recommendation():
     if request.method == 'OPTIONS':
         return _build_cors_preflight_response(), 204
@@ -114,6 +110,15 @@ def recommendation():
             return _corsify_actual_response(jsonify({"success": True})), 200
         except RepeateError as e:
             return f"An Error Occured: {e}"
+        except Exception as e:
+            return f"An Error Occured: {e}"
+    if request.method == 'DELETE':
+        try:
+            package_img = [doc.to_dict() for doc in user_rcmd.stream()]
+            if(len(package_img) > 0):
+                for el in package_img:
+                    if(el["src"] == request.json["src"]):    user_rcmd.document(el["hex"]).delete()
+            return _corsify_actual_response(jsonify({"success": True})), 200
         except Exception as e:
             return f"An Error Occured: {e}"
 
