@@ -27,7 +27,6 @@ def create_app():
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 db = firestore.client()
 state = False
-user_Ref = db.collection('user')
 user_rcmd = db.collection('rcmd')
 
 def getDataBase():
@@ -55,17 +54,34 @@ decision1 = [
 ]
 userAPI = Blueprint('userAPI', __name__)
 
+@userAPI.route('/userID', methods={ 'GET', 'POST', 'OPTIONS' })
+def user():
+    if request.method == 'OPTIONS':
+        return _build_cors_preflight_response(), 204
+    if request.method == 'GET':
+        try:
+            package_user = [doc.to_dict() for doc in db.collection('userID').stream()]
+            return _corsify_actual_response(jsonify(package_user[0])), 200
+        except Exception as e:
+            return f"An Error Occured: {e}"
+    if request.method == 'POST':
+        try:
+            id = uuid.uuid4()
+            db.collection('userID').document(id.hex).set(request.json)
+            return _corsify_actual_response(jsonify({"success": True})), 200
+        except Exception as e:
+            return f"An Error Occured: {e}"
+
+
 @userAPI.route('/state', methods=[ 'GET' ])
 def statement():
     global state
-    print(state)
     return _corsify_actual_response(jsonify({"state": state})), 200
 
 @userAPI.route('/decision', methods=[ 'GET', 'POST', 'OPTIONS'])
 def decision():
     global decision1
     global state
-
     if request.method == 'OPTIONS':
         return _build_cors_preflight_response(), 204
     if request.method == 'GET':
@@ -102,6 +118,7 @@ def recommendation():
                 if(request.json["src"] in list(map(lambda el: el["src"], rcmd))):    flag = True
             if(flag):   raise RepeateError("This picture has already exist!")
             id = uuid.uuid4()
+            package_img = [doc.to_dict() for doc in user_rcmd.stream()]
             request.json.update({"hex": id.hex})
             user_rcmd.document(id.hex).set(request.json)
             return _corsify_actual_response(jsonify({"success": True})), 200
@@ -123,30 +140,31 @@ def recommendation():
 @userAPI.route('/collection', methods=['GET', 'POST', 'DELETE', 'OPTIONS'], )
 def collection():
     global user
+    package_user = [doc.to_dict() for doc in db.collection('userID').stream()]
     if request.method == 'OPTIONS':
         return _build_cors_preflight_response(), 204
     if request.method == 'POST':
         try:
-            all_images = [doc.to_dict() for doc in user_Ref.stream()]
+            all_images = [doc.to_dict() for doc in db.collection(package_user[0]['userID']).stream()]
             id = uuid.uuid4()
             request.json.update({"hex": id.hex})
-            user_Ref.document(id.hex).set(request.json)
+            db.collection(package_user[0]['userID']).document(id.hex).set(request.json)
             return _corsify_actual_response(jsonify({"success": True})), 200
         except Exception as e:
             return f"An error occured{e}"
     if request.method == 'GET':
         try:
-            all_images = [doc.to_dict() for doc in user_Ref.stream()]
+            all_images = [doc.to_dict() for doc in db.collection(package_user[0]['userID']).stream()]
             return _corsify_actual_response(jsonify(all_images)), 200
         except Exception as e:
             return f"An Error Occured: {e}"
     if request.method == 'DELETE':
         try:
-            all_images = [doc.to_dict() for doc in user_Ref.stream()]
+            all_images = [doc.to_dict() for doc in db.collection(package_user[0]['userID']).stream()]
             flag = False
             if(request.json["hex"] in list(map(lambda el: el["hex"], all_images))):    flag = True
             if(not flag):   raise NotFound("Not found!")
-            user_Ref.document(request.json["hex"]).delete()
+            db.collection(package_user[0]['userID']).document(request.json["hex"]).delete()
             return _corsify_actual_response(jsonify({"success": True})), 200
         except NotFound as e:
             return f"An Error Occured: {e}"
