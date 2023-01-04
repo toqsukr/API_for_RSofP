@@ -71,6 +71,7 @@ def user():
             if(len(package_user) > 0):
                 for el in package_user:
                     db.collection('userID').document(el["hex"]).delete()
+            request.json.update({"hex": id.hex})
             db.collection('userID').document(id.hex).set(request.json)
             return _corsify_actual_response(jsonify({"success": True})), 200
         except Exception as e:
